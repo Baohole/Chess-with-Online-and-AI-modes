@@ -17,3 +17,6 @@ Remarks:
 -Training the AI was limited due to hardware and data limitations. 
 -There were only 15,000 games I had of 2000+ elo players which could of caused overfitting and training the model took long.
 -Due to this, the AI, does not always make the best decisions, hence the satirical name "Cagnus Marlsen".
+
+Chess AI Demo:
+-Download the ChessAIDemo.mkv file to view a game with the AI and the Cancel feature. As you can probably notice the AI does not make the best decisions due to training limitations. 

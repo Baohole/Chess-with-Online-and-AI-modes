@@ -3,7 +3,7 @@ Created Convolutional Neural Network (CNN) in TensorFlow and implemented it to a
 
 -Used pandas and numpy to parse data and create "new_data.csv" to train the CNN. Data only included games of players with ratings of 2000 or greater.
 
--Trained CNN model by going through 10,000 games in "new_data.csv" and generating and input array of matrix board state representations and output array of consecutively perfomed moves in those games.  another with performed moves. 
+-Trained CNN model by going through 10,000 games in "new_data.csv" and generating an input array of matrix board state representations and output array of consecutively perfomed moves in those games.  
 
 -Created CNN using TensorFlow and trained it using data generated from "new_data.csv".
 

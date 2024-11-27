@@ -2,6 +2,7 @@
 DEMOS:
 - https://www.youtube.com/watch?v=C83Q3hPqgCc
 - https://www.youtube.com/watch?v=CclX7bjWGGQ
+
 Created Convolutional Neural Network (CNN) in TensorFlow and implemented it to add "Play Against AI" to my Chess Game project. 
 
 -Used pandas and numpy to parse data and create "new_data.csv" to train the CNN. Data only included games of players with ratings of 2000 or greater.

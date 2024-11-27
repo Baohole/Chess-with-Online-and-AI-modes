@@ -1,7 +1,8 @@
 # Chess-AI-and-Implementation-to-Online-Chess-Game- 
 DEMOS:
-- https://www.youtube.com/watch?v=C83Q3hPqgCc
-- https://www.youtube.com/watch?v=CclX7bjWGGQ
+
+- https://www.youtube.com/watch?v=C83Q3hPqgCc - Online Mode and general features
+- https://www.youtube.com/watch?v=CclX7bjWGGQ - AI Mode playthrough
 
 Created Convolutional Neural Network (CNN) in TensorFlow and implemented it to add "Play Against AI" to my Chess Game project. 
 

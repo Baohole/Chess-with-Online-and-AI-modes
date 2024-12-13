@@ -21,8 +21,6 @@ Created Convolutional Neural Network (CNN) in TensorFlow and implemented it to a
 Remarks: 
 -Training the AI was limited due to hardware and data limitations. 
 -There were only 15,000 games I had of 2000+ elo players which could of caused overfitting and training the model took long.
--Due to this, the AI, does not always make the best decisions, hence the satirical name "Cagnus Marlsen".
+-Due to this, the AI, does not always make the best decisions.
 
-Chess AI and Game Demo:
--Download the ChessAIDemo.mkv file to view a game with the AI and the Cancel feature. As you can probably notice the AI does not make the best decisions due to training limitations. 
--Download the ChessGame.kv file to watch the online mode game demo that also goes over all of the rules implemented.
+

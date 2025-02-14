@@ -20,7 +20,6 @@ Created Convolutional Neural Network (CNN) in TensorFlow and implemented it to a
 
 Remarks: 
 -Training the AI was limited due to hardware and data limitations. 
--There were only 15,000 games I had of 2000+ elo players which could of caused overfitting and training the model took long.
--Due to this, the AI, does not always make the best decisions.
+-There were only 15,000 games I had of 2000+ elo players which could of caused overfitting based on which moves were most common in this limited dataset. Due to this, the AI does not always make the best decisions.
 
 

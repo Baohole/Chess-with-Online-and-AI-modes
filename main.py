@@ -521,7 +521,7 @@ def main(black, white):
                                     
                                     # Hiển thị nước đi của người chơi trên bàn cờ
                                     if len(move_uci) >= 4:
-                                        highlight_move(move_uci[:2], move_uci[2:4])
+                                        highlight_move(bo, move_uci[:2], move_uci[2:4])
                                     
                                     AI_move = get_ai_move()
                                     print("move generated", AI_move)
@@ -536,7 +536,7 @@ def main(black, white):
                                     
                                     # Hiển thị nước đi của AI trên bàn cờ
                                     if len(AI_move) >= 4:
-                                        highlight_move(AI_move[:2], AI_move[2:4])
+                                        highlight_move(bo, AI_move[:2], AI_move[2:4])
                                     
                                     time.sleep(1)
                                     bo = convert_board()
@@ -764,7 +764,7 @@ def main(black, white):
                                         
                                         # Hiển thị nước đi của người chơi trên bàn cờ
                                         if len(move_uci) >= 4:
-                                            highlight_move(move_uci[:2], move_uci[2:4])
+                                            highlight_move(bo, move_uci[:2], move_uci[2:4])
                                         
                                         AI_move = get_ai_move()
                                         print("move generated", AI_move)
@@ -784,7 +784,7 @@ def main(black, white):
                                         
                                         # Hiển thị nước đi của AI trên bàn cờ
                                         if len(AI_move) >= 4:
-                                            highlight_move(AI_move[:2], AI_move[2:4])
+                                            highlight_move(bo, AI_move[:2], AI_move[2:4])
                                         
                                         time.sleep(1)
                                         bo = convert_board()
@@ -802,7 +802,7 @@ def main(black, white):
                                         
                                         # Hiển thị nước đi của người chơi trên bàn cờ
                                         if len(move_uci) >= 4:
-                                            highlight_move(move_uci[:2], move_uci[2:4])
+                                            highlight_move(bo, move_uci[:2], move_uci[2:4])
                                         
                                         # Chuyển lượt sang AI
                                         ActivePlayer = 'b'
@@ -822,7 +822,7 @@ def main(black, white):
                                         
                                         # Hiển thị nước đi của AI trên bàn cờ
                                         if len(AI_move) >= 4:
-                                            highlight_move(AI_move[:2], AI_move[2:4])
+                                            highlight_move(bo, AI_move[:2], AI_move[2:4])
                                         
                                         time.sleep(1)
                                         bo = convert_board()
@@ -831,7 +831,7 @@ def main(black, white):
                                     break
 
     # Hàm hiển thị nước đi trực quan trên bàn cờ
-    def highlight_move(src_square=None, dst_square=None, clear_previous=True):
+    def highlight_move(bo, src_square=None, dst_square=None, clear_previous=True):
         # Vẽ lại bàn cờ để xóa highlight cũ nếu cần
         if clear_previous:
             screen.blit(BG, (0,0))

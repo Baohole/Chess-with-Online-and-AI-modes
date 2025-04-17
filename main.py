@@ -1,6 +1,7 @@
 import pygame 
 import os
-from CagnusMarlsen import predict, to_game
+from CagnusMarlsen import predict, to_game as cagnus_to_game
+import minimax_ai
 
 
 # Set the current working directory to the script's directory
@@ -193,18 +194,24 @@ def main(black, white):
                         return False, n, ID
         
     def menu():
-        AI_game=False
-        online_game=False
+        AI_game = False
+        online_game = False
+        minimax_game = False
+        depth = 3
+        
         while True:
             screen.blit(backGround, (0, 0))
             screen.blit(large.render("Chess", True, (255, 255, 255)), (20, 20))
-            screen.blit(font.render("Play Against AI", True, (255, 0, 0)), (20, 150))
+            screen.blit(font.render("Play Against AI (Deep Learning)", True, (255, 0, 0)), (20, 150))
+            screen.blit(font.render("Play Against AI (Minimax)", True, (255, 0, 0)), (20, 200))
             screen.blit(font.render("Play Online", True, (255, 0, 0)), (20, 250))
 
-            if online_game :
-                return n,ID , "online"
+            if online_game:
+                return n, ID, "online"
             elif AI_game:
                 return n, ID, "AI"
+            elif minimax_game:
+                return n, ID, "minimax", depth
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -212,12 +219,17 @@ def main(black, white):
                     sys.exit()
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     pos = pygame.mouse.get_pos()
-                    if 20 <= pos[0] <= 171 and 150 <= pos[1] <= 171:
+                    if 20 <= pos[0] <= 310 and 150 <= pos[1] <= 171:
                         AI_game = True
-                        n=1
-                        ID='w'
+                        n = 1
+                        ID = 'w'
+                    elif 20 <= pos[0] <= 230 and 200 <= pos[1] <= 221:
+                        minimax_game = True
+                        n = 1
+                        ID = 'w'
+                        depth = 3  # Độ sâu cho minimax
                     elif 20 <= pos[0] <= 132 and 250 <= pos[1] <= 270:
-                        stop,n,ID = loading()
+                        stop, n, ID = loading()
                         if stop:
                             online_game = True
                             break
@@ -225,41 +237,50 @@ def main(black, white):
             pygame.display.update()
 
 
-    def start_game(n,ID,game_type):
+    def start_game(n, ID, game_type, depth=None):
+        board_to_uci = {0:'a', 1:'b', 2:'c', 3:'d', 4:'e', 5:'f', 6:'g', 7:'h'}
 
-        board_to_uci={0:'a',
-                      1:'b',
-                     2:'c',
-                     3:'d',
-                     4:'e',
-                     5:'f',
-                     6:'g',
-                     7:'h',
-        }
+        run = True
+        canBlackcastle = black
+        canWhitecastle = white
+        selected = False
+        move_uci = ""
+        PieceChosen = None
+        
+        if game_type == "online":
+            bo = n.getBoard()
+        elif game_type == "AI" or game_type == "minimax":
+            bo = Board(8, 8)
+            board_for_AI = chess.Board()
+            promotion_to_uci = {"Rook":'r', "Bishop":'b', "Queen":'q', "Knight":'n'}
+            startTime = time.time()
 
-        run=True
-    
-        canBlackcastle=black
-        canWhitecastle=white
-    
-    
-        selected=False
-        if game_type=="online":
-            bo=n.getBoard()
-        elif game_type=="AI":
+        updatedboard = False
+        updatedPawns = False
+        elapsed_time = 0
+        PlayersTime = 150 * 600
+        ActivePlayer = 'w'
+        
+        # Xóa tất cả highlight trước đó
+        
+        print("This is a", game_type, "game")
+        if game_type == "minimax" and depth is not None:
+            print(f"Minimax depth: {depth}")
             
-            bo=Board(8,8)
-            board_for_AI=chess.Board()
-            promotion_to_uci={"Rook":'r', "Bishop":'b', "Queen":'q', "Knight":'n'}#used to represent promotion of pawns in UCI format for AI. 
-            startTime=time.time()
+        # Helper function để lấy nước đi của AI
+        def get_ai_move():
+            if game_type == "AI":
+                return predict(board_for_AI)
+            elif game_type == "minimax":
+                return minimax_ai.predict_minimax(board_for_AI, depth)
+        
+        # Helper function để chuyển đổi bàn cờ
+        def convert_board():
+            if game_type == "AI":
+                return cagnus_to_game(board_for_AI)
+            elif game_type == "minimax":
+                return minimax_ai.to_game(board_for_AI)
 
-        updatedboard=False
-        updatedPawns=False
-
-        elapsed_time=0
-        PlayersTime=150*600
-        ActivePlayer='w'
-        print("This is a ",game_type, "game")
         while run :
             
             #getting moves from AI
@@ -286,7 +307,7 @@ def main(black, white):
               
            # if game_type=="AI":
               #  if 
-            if (game_type=="online" and ActivePlayer==ID) or (game_type=="AI" and ActivePlayer=="w"):
+            if (game_type=="online" and ActivePlayer==ID) or ((game_type=="AI" or game_type=="minimax") and ActivePlayer=="w"):
                 
                 if updatedboard==False and game_type=="online":
                     bo=n.getBoard()
@@ -339,7 +360,7 @@ def main(black, white):
                    
                 
                 
-                if (event.type==pygame.MOUSEBUTTONDOWN and game_type=="online" and ID==ActivePlayer)or (event.type==pygame.MOUSEBUTTONDOWN and game_type=="AI" and ActivePlayer=="w"):
+                if (event.type==pygame.MOUSEBUTTONDOWN and game_type=="online" and ID==ActivePlayer) or (event.type==pygame.MOUSEBUTTONDOWN and (game_type=="AI" or game_type=="minimax") and ActivePlayer=="w"):
                     if updatedPawns==False:
                         IteratePawnsForPassant(bo,ID)
                         if CheckMate(bo,ID,canBlackcastle,canWhitecastle ):
@@ -386,7 +407,7 @@ def main(black, white):
                                 bo.board[ycoord][xcoord]=None
                                 bo.board[row][col].selected=False
 
-                                if game_type=="AI":
+                                if game_type=="AI" or game_type=="minimax":
                                     move_uci=move_uci[:2]+board_to_uci[col]+str(8-row)
 
                                 from piece import Pawn
@@ -454,8 +475,8 @@ def main(black, white):
                                                 elif PieceChosen=="no choice":
                                                     pass
 
-                                            if game_type=="AI":
-                                                move_uci=move_uci[:2]+board_to_uci[bo.board[row][col].x]+str(8-bo.board[row][col].y)+promotion_to_uci[PieceChosen]            
+                                            if game_type=="AI" or game_type=="minimax":
+                                                move_uci = move_uci[:2] + board_to_uci[bo.board[row][col].x] + str(8-bo.board[row][col].y) + promotion_to_uci[PieceChosen]
                                                 print(move_uci)
                                                 
 
@@ -480,8 +501,8 @@ def main(black, white):
                                                 elif PieceChosen=="no choice":
                                                     pass
 
-                                            if game_type=="AI":
-                                                move_uci=move_uci[:2]+board_to_uci[bo.board[row][col].x]+str(8-bo.board[row][col].y)+promotion_to_uci[PieceChosen]                                                                    
+                                            if game_type=="AI" or game_type=="minimax":
+                                                move_uci = move_uci[:2] + board_to_uci[bo.board[row][col].x] + str(8-bo.board[row][col].y) + promotion_to_uci[PieceChosen]
                                                 print(move_uci) 
 
 
@@ -490,16 +511,21 @@ def main(black, white):
                                 
                                 if game_type=="online":
                                     n.send(bo) 
-                                    ActivePlayer=n.getCurrentTurn()
+                                    ActivePlayer = n.getCurrentTurn()
                                 updatedboard=False
                                 selected=False
-                                if game_type=="AI":
-
+                                if game_type=="AI" or game_type=="minimax":
                                     board_for_AI.push(chess.Move.from_uci(move_uci))
-                                
-                                    AI_move=predict(board_for_AI)
+                                    # Chuyển lượt sang AI
+                                    ActivePlayer = 'b'
+                                    
+                                    # Hiển thị nước đi của người chơi trên bàn cờ
+                                    if len(move_uci) >= 4:
+                                        highlight_move(move_uci[:2], move_uci[2:4])
+                                    
+                                    AI_move = get_ai_move()
                                     print("move generated", AI_move)
-                                    if AI_move==None:
+                                    if AI_move == None:
                                         screen.blit(large.render("You Won", True, (255, 0, 0)), (10, 150))
                                         screen.blit(font.render("By Checkmate", True, (255, 0, 0)), (10, 225))
                                         pygame.display.update()
@@ -507,8 +533,14 @@ def main(black, white):
                                         return
                                     board_for_AI.push(chess.Move.from_uci(AI_move))
                                     print(board_for_AI)
-                                    time.sleep(1)#so moves aren't instant
-                                    bo=to_game(board_for_AI)
+                                    
+                                    # Hiển thị nước đi của AI trên bàn cờ
+                                    if len(AI_move) >= 4:
+                                        highlight_move(AI_move[:2], AI_move[2:4])
+                                    
+                                    time.sleep(1)
+                                    bo = convert_board()
+                                    ActivePlayer = 'w'  # Chuyển lượt lại người chơi
                                 updatedPawns=False 
                                         
                                 break
@@ -523,12 +555,12 @@ def main(black, white):
                         
 
                             bo.board[row][col].selected=True
-                            if game_type=="AI":
+                            if game_type=="AI" or game_type=="minimax":
                                 move_uci=board_to_uci[bo.board[row][col].x]+str(8 - bo.board[row][col].y )
-                                print(move_uci,chr(bo.board[row][col].y + 1))
-                            movingpiece=bo.board[row][col]
-                            selected =True
+                                print(move_uci)
                             foundcapture=0
+                            selected =True
+                            movingpiece=bo.board[row][col]
                         
                         
                     
@@ -540,9 +572,11 @@ def main(black, white):
                                     
                                 
                                 
+                        # Xóa hiển thị nước đi khi chọn quân mới
+                        
 
                         bo.board[row][col].selected=True
-                        if game_type=="AI":
+                        if game_type=="AI" or game_type=="minimax":
                             move_uci=board_to_uci[bo.board[row][col].x]+str(8 - bo.board[row][col].y )
                             print(move_uci)
                         foundcapture=0
@@ -554,7 +588,6 @@ def main(black, white):
                     
                     
             
-
                     elif bo.board[row][col]==None and selected==True:#if user clicks on empty space and a piece is selected
                     
                         if type(movingpiece)!=King:
@@ -678,9 +711,10 @@ def main(black, white):
                                                 elif PieceChosen=="no choice":
                                                     pass
 
-                                            if game_type=="AI":
-                                                move_uci=move_uci[:2]+board_to_uci[bo.board[row][col].x]+str(8-bo.board[row][col].y)+promotion_to_uci[PieceChosen]
-                                               
+                                            if game_type=="AI" or game_type=="minimax":
+                                                move_uci = move_uci[:2] + board_to_uci[bo.board[row][col].x] + str(8-bo.board[row][col].y) + promotion_to_uci[PieceChosen]
+                                                print(move_uci)
+                                                
 
                                     elif movingpiece.color=='b':
                                         if movingpiece.y==7:
@@ -705,9 +739,9 @@ def main(black, white):
                                                 elif PieceChosen=="no choice":
                                                     pass
 
-                                            if game_type=="AI":
-                                                move_uci=move_uci[:2]+board_to_uci[bo.board[row][col].x]+str(8-bo.board[row][col].y)+promotion_to_uci[PieceChosen]
-                                               
+                                            if game_type=="AI" or game_type=="minimax":
+                                                move_uci = move_uci[:2] + board_to_uci[bo.board[row][col].x] + str(8-bo.board[row][col].y) + promotion_to_uci[PieceChosen]
+                                                print(move_uci)
                                 
                                 selected=False
                                 updatedboard=False
@@ -715,35 +749,67 @@ def main(black, white):
                                 if game_type=="online":
                                     bo=n.send(bo)
                                     ActivePlayer=n.getCurrentTurn()
-                                elif game_type=="AI":
+                                elif game_type=="AI" or game_type=="minimax":
                                     try:
-                                        if PieceChosen!=None:
-                                             board_for_AI.push(chess.Move.from_uci(move_uci))
-                                        print(board_for_AI)
-                                        AI_move=predict(board_for_AI)
-                                        print("move generated",AI_move)
+                                        if PieceChosen is not None:
+                                            board_for_AI.push(chess.Move.from_uci(move_uci))
+                                        else:
+                                            # Tạo lại nước đi từ vị trí đầu và cuối
+                                            from_square = board_to_uci[xcoord] + str(8-ycoord)
+                                            to_square = board_to_uci[col] + str(8-row)
+                                            move_uci = from_square + to_square
+                                            
+                                            board_for_AI.push(chess.Move.from_uci(move_uci))
+                                            print(board_for_AI)
+                                        
+                                        # Hiển thị nước đi của người chơi trên bàn cờ
+                                        if len(move_uci) >= 4:
+                                            highlight_move(move_uci[:2], move_uci[2:4])
+                                        
+                                        AI_move = get_ai_move()
+                                        print("move generated", AI_move)
 
-                                        if AI_move==None:
+                                        if AI_move is None:
                                             screen.blit(large.render("You Won", True, (255, 0, 0)), (10, 150))
                                             screen.blit(font.render("By Checkmate", True, (255, 0, 0)), (10, 225))
                                             screen.blit(font.render("", True, (255, 0, 0)), (10, 225))
                                             pygame.display.update()
                                             time.sleep(4)
                                             return
-
+                                        
+                                        # Chuyển lượt sang AI
+                                        ActivePlayer = 'b'
                                         board_for_AI.push(chess.Move.from_uci(AI_move))
                                         print(board_for_AI)
+                                        
+                                        # Hiển thị nước đi của AI trên bàn cờ
+                                        if len(AI_move) >= 4:
+                                            highlight_move(AI_move[:2], AI_move[2:4])
+                                        
                                         time.sleep(1)
-                                        bo=to_game(board_for_AI)
-                                    except:
-                                        move_uci=move_uci[:2]+board_to_uci[movingpiece.x]+str(8-movingpiece.y)
+                                        bo = convert_board()
+                                        # Chuyển lượt lại người chơi
+                                        ActivePlayer = 'w'
+                                    except Exception as e:
+                                        print(f"Error: {e}")
+                                        # Tạo lại nước đi từ vị trí đầu và cuối
+                                        from_square = board_to_uci[xcoord] + str(8-ycoord)
+                                        to_square = board_to_uci[col] + str(8-row)
+                                        move_uci = from_square + to_square
                                         
                                         board_for_AI.push(chess.Move.from_uci(move_uci))
                                         print(board_for_AI)
-                                        AI_move=predict(board_for_AI)
-                                        print("move generated",AI_move)
+                                        
+                                        # Hiển thị nước đi của người chơi trên bàn cờ
+                                        if len(move_uci) >= 4:
+                                            highlight_move(move_uci[:2], move_uci[2:4])
+                                        
+                                        # Chuyển lượt sang AI
+                                        ActivePlayer = 'b'
+                                        AI_move = get_ai_move()
+                                        print("move generated", AI_move)
 
-                                        if AI_move==None:
+                                        if AI_move is None:
                                             screen.blit(large.render("You Won", True, (255, 0, 0)), (10, 150))
                                             screen.blit(font.render("By Checkmate", True, (255, 0, 0)), (10, 225))
                                             screen.blit(font.render("", True, (255, 0, 0)), (10, 225))
@@ -753,16 +819,58 @@ def main(black, white):
 
                                         board_for_AI.push(chess.Move.from_uci(AI_move))
                                         print(board_for_AI)
+                                        
+                                        # Hiển thị nước đi của AI trên bàn cờ
+                                        if len(AI_move) >= 4:
+                                            highlight_move(AI_move[:2], AI_move[2:4])
+                                        
                                         time.sleep(1)
-                                        bo=to_game(board_for_AI)
-                                        #if None player wins
-                                
-                                    #ActivePlayer='b'
-                                break
+                                        bo = convert_board()
+                                        # Chuyển lượt lại người chơi
+                                        ActivePlayer = 'w'
+                                    break
+
+    # Hàm hiển thị nước đi trực quan trên bàn cờ
+    def highlight_move(src_square=None, dst_square=None, clear_previous=True):
+        # Vẽ lại bàn cờ để xóa highlight cũ nếu cần
+        if clear_previous:
+            screen.blit(BG, (0,0))
+            bo.draw(screen, bo, canBlackcastle, canWhitecastle)
+        
+        square_size = width // 8
+        
+        # Vẽ nguồn (màu xanh lá nhạt)
+        if src_square:
+            src_col, src_row = ord(src_square[0]) - ord('a'), 8 - int(src_square[1])
+            x, y = src_col * square_size, src_row * square_size
+            # Vẽ viền dày 3px
+            pygame.draw.rect(screen, (100, 255, 100), (x, y, square_size, square_size), 3)
+            # Vẽ tô màu nền bên trong mờ
+            overlay = pygame.Surface((square_size, square_size), pygame.SRCALPHA)
+            overlay.fill((100, 255, 100, 90))  # RGBA với alpha = 90 (mờ)
+            screen.blit(overlay, (x, y))
+            
+        # Vẽ đích (màu đỏ nhạt)
+        if dst_square:
+            dst_col, dst_row = ord(dst_square[0]) - ord('a'), 8 - int(dst_square[1])
+            x, y = dst_col * square_size, dst_row * square_size
+            # Vẽ viền dày 3px
+            pygame.draw.rect(screen, (255, 100, 100), (x, y, square_size, square_size), 3)
+            # Vẽ tô màu nền bên trong mờ 
+            overlay = pygame.Surface((square_size, square_size), pygame.SRCALPHA)
+            overlay.fill((255, 100, 100, 90))  # RGBA với alpha = 90 (mờ)
+            screen.blit(overlay, (x, y))
+            
+        pygame.display.update()
 
     while True:
-        n,ID,game_type=menu()
-        start_game(n,ID,game_type)
+        result = menu()
+        if len(result) == 3:
+            n, ID, game_type = result
+            start_game(n, ID, game_type)
+        else:
+            n, ID, game_type, depth = result
+            start_game(n, ID, game_type, depth)
 
 
 

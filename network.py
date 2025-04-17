@@ -95,7 +95,7 @@ class Network:
         try:
             self.client.send("WhoWon".encode('utf-8'))
             Winner=self.client.recv(2048).decode('utf-8')
-            print("Winner is ", Winner)
+            # print("Winner is ", Winner)
             if Winner=='w' or Winner=='b':
                 WonHow=self.client.recv(2048).decode('utf-8')
                 self.whoWon=Winner
